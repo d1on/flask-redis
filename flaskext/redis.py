@@ -1,9 +1,10 @@
 """
+
 """
 
 from __future__ import absolute_import
 import redis
-from flask import g
+from flask import _request_ctx_stack
 
 class Redis(object):
 
@@ -17,6 +18,7 @@ class Redis(object):
     def init_app(self, app):
         """
         Used to initialize redis with app object
+
         """
         app.config.setdefault('REDIS_HOST', 'localhost')
         app.config.setdefault('REDIS_PORT', 6379)
@@ -34,4 +36,10 @@ class Redis(object):
                            password=self.app.config['REDIS_PASSWORD'])
 
     def before_request(self):
-        g.redis = self.connect()
+        ctx = _request_ctx_stack.top
+        ctx.redis = self.connect()
+
+    def get_redis(self):
+        ctx = _request_ctx_stack.top
+        if ctx is not None:
+            return ctx.redis
